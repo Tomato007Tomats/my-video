@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm install)",
-      "Bash(npm install -g @anthropic-ai/claude-code)"
+      "Bash(npm install -g @anthropic-ai/claude-code)",
+      "Bash(git remote set-url origin https://github.com/Tomato007Tomats/my-video.git)",
+      "Bash(git remote remove upstream)"
     ]
   }
 }
