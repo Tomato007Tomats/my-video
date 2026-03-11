@@ -11,6 +11,10 @@ import { SaaSAgentDemo } from "./SaaSAgentDemo";
 import { ScreenRecordingWithClock } from "./ScreenRecordingWithClock";
 import { AxosPortfolioIntro } from "./AxosPortfolioIntro";
 import { LiquidGlass } from "./LiquidGlass";
+import {
+  AxosRiskSignal15s,
+  axosRiskSignal15sDuration,
+} from "./AxosRiskSignal15s";
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -77,6 +81,14 @@ export const RemotionRoot: React.FC = () => {
         id="AxosPortfolioRiskSignalDemo"
         component={AxosPortfolioRiskSignalDemo}
         durationInFrames={axosPortfolioRiskSignalDemoDuration}
+        fps={60}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="AxosRiskSignal15s"
+        component={AxosRiskSignal15s}
+        durationInFrames={axosRiskSignal15sDuration}
         fps={60}
         width={1920}
         height={1080}
