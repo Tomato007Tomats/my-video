@@ -11,26 +11,11 @@ import { SaaSAgentDemo } from "./SaaSAgentDemo";
 import { ScreenRecordingWithClock } from "./ScreenRecordingWithClock";
 import { AxosPortfolioIntro } from "./AxosPortfolioIntro";
 import { LiquidGlass } from "./LiquidGlass";
+import { AxosSafariDemo, axosSafariDemoDuration } from "./AxosSafariDemo";
 
 export const RemotionRoot: React.FC = () => {
   return (
     <>
-      <Composition
-        id="MyComp"
-        component={MyComposition}
-        durationInFrames={60}
-        fps={30}
-        width={1280}
-        height={720}
-      />
-      <Composition
-        id="AxosIntro"
-        component={AxosIntro}
-        durationInFrames={450}
-        fps={30}
-        width={1920}
-        height={1080}
-      />
       <Composition
         id="FloatingAIInputShowcase"
         component={FloatingAIInputShowcase}
@@ -63,7 +48,6 @@ export const RemotionRoot: React.FC = () => {
         width={1920}
         height={1080}
       />
-
       <Composition
         id="LiquidGlass"
         component={LiquidGlass}
@@ -72,11 +56,18 @@ export const RemotionRoot: React.FC = () => {
         width={1920}
         height={1080}
       />
-
       <Composition
         id="AxosPortfolioRiskSignalDemo"
         component={AxosPortfolioRiskSignalDemo}
         durationInFrames={axosPortfolioRiskSignalDemoDuration}
+        fps={60}
+        width={1920}
+        height={1080}
+      />
+      <Composition
+        id="AxosSafariDemo"
+        component={AxosSafariDemo}
+        durationInFrames={axosSafariDemoDuration}
         fps={60}
         width={1920}
         height={1080}

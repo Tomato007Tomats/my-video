@@ -21,7 +21,6 @@ import {
   Database,
   Search,
   BarChart2,
-  Sparkles,
   Activity,
   Shield,
   Zap,
@@ -69,14 +68,13 @@ const useAnimFrame = () => {
   return { frame: raw * (30 / renderFps), fps: 30 };
 };
 
-const GLASS_BG =
-  "linear-gradient(180deg, rgba(51,51,57,0.55) 0%, rgba(38,38,39,0.55) 100%)";
-const GLASS_BORDER = "rgba(255,255,255,0.08)";
-const GLASS_SHADOW =
-  "0 20px 60px rgba(0,0,0,0.45), inset 0.6px 0.6px 0.6px 0 rgba(255,255,255,0.12)";
+const GLASS_BG = "rgba(32,32,32,0.80)";
+const GLASS_SHADOW = "0 0 44px 0 rgba(0,0,0,0.8)";
 const ALERT_BORDER = "rgba(239,68,68,0.4)";
 const ALERT_BG =
   "linear-gradient(180deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.02) 100%)";
+const GRADIENT_BORDER =
+  "linear-gradient(210deg, rgba(255,255,255,0.22) 6.2%, rgba(20,20,20,0.5) 21.56%, rgba(50,50,50,0.5) 69.03%, rgba(255,255,255,0.4) 96.99%) border-box";
 
 export const axosPortfolioRiskSignalDemoDuration = 1640; // 820 frames × 2 (60fps)
 
@@ -85,41 +83,84 @@ const GlassCard: React.FC<{
   children: React.ReactNode;
   style?: React.CSSProperties;
   borderColor?: string;
-  lightLine?: boolean;
-  lightLineColor?: string;
-}> = ({
-  children,
-  style,
-  borderColor,
-  lightLine = true,
-  lightLineColor,
-}) => (
+}> = ({ children, style, borderColor }) => (
   <div
     style={{
       background: GLASS_BG,
-      backdropFilter: "blur(24px)",
-      WebkitBackdropFilter: "blur(24px)",
-      border: `1px solid ${borderColor || GLASS_BORDER}`,
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
       borderRadius: 24,
       boxShadow: GLASS_SHADOW,
       position: "relative",
       overflow: "hidden",
+      border: borderColor ? `1px solid ${borderColor}` : "none",
       ...style,
     }}
   >
-    {lightLine && (
-      <div
+    {/* Noise texture */}
+    <span
+      style={{
+        position: "absolute",
+        inset: 0,
+        pointerEvents: "none",
+        opacity: 0.05,
+        filter: "url(#glassNoise)",
+      }}
+    />
+
+    {/* Purple glow */}
+    <div
+      style={{
+        position: "absolute",
+        width: 80,
+        height: 80,
+        top: -20,
+        left: -20,
+        borderRadius: "50%",
+        pointerEvents: "none",
+        filter: "blur(32px)",
+        backgroundColor: "rgba(142,91,255,0.18)",
+        willChange: "filter",
+      }}
+    />
+
+    {/* Gradient border */}
+    {!borderColor && (
+      <span
         style={{
           position: "absolute",
-          top: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "70%",
-          height: 1,
-          background: `linear-gradient(90deg, transparent, ${lightLineColor || `${COLORS.primary[400]}40`}, transparent)`,
+          inset: 0,
+          pointerEvents: "none",
+          opacity: 0.5,
+          borderRadius: 24,
+          border: "1px solid transparent",
+          background: GRADIENT_BORDER,
+          WebkitMask:
+            "linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)",
+          WebkitMaskComposite: "xor",
+          maskComposite: "exclude" as unknown as string,
         }}
       />
     )}
+
+    {/* SVG Noise Filter */}
+    <svg
+      style={{ position: "absolute", width: 0, height: 0 }}
+      aria-hidden="true"
+    >
+      <defs>
+        <filter id="glassNoise">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.9"
+            numOctaves={4}
+            stitchTiles="stitch"
+          />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+      </defs>
+    </svg>
+
     {children}
   </div>
 );
@@ -201,7 +242,15 @@ const AnimatedBackground: React.FC<{ children: React.ReactNode }> = ({
           />
         );
       })}
-      {children}
+      {/* 30% zoom on all scene content */}
+      <AbsoluteFill
+        style={{
+          transform: "scale(1.3)",
+          transformOrigin: "center center",
+        }}
+      >
+        {children}
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };
@@ -303,17 +352,19 @@ const Scene1_Hook: React.FC = () => {
         }}
       />
 
-      {/* Line 1: "15 seconds." */}
+      {/* Line 1: "Imagine your portfolio" */}
       <div style={{ display: "flex", alignItems: "baseline" }}>
-        <HookWord word="15" delay={8} />
-        <HookWord word="seconds." delay={14} />
+        <HookWord word="Imagine" delay={8} />
+        <HookWord word="your" delay={13} />
+        <HookWord word="portfolio" delay={18} />
       </div>
 
-      {/* Line 2: "Zero manual input." — gradient */}
+      {/* Line 2: "monitoring itself — automatically." — gradient */}
       <div style={{ display: "flex", alignItems: "baseline" }}>
-        <HookWord word="Zero" delay={30} gradient />
-        <HookWord word="manual" delay={36} gradient />
-        <HookWord word="input." delay={42} gradient />
+        <HookWord word="monitoring" delay={30} gradient />
+        <HookWord word="itself" delay={35} gradient />
+        <HookWord word="—" delay={40} gradient />
+        <HookWord word="automatically." delay={44} gradient />
       </div>
 
       {/* Subtle Clock icon */}
@@ -448,7 +499,6 @@ const Scene2_DashboardAlert: React.FC = () => {
               height: clipH,
               overflow: "hidden",
               borderRadius: clipR,
-              border: `1px solid ${GLASS_BORDER}`,
               boxShadow: `${GLASS_SHADOW}${dragActive ? `, 0 0 ${18 + drag * 14}px ${COLORS.primary[500]}18` : ""}`,
             }}
           >
@@ -458,8 +508,8 @@ const Scene2_DashboardAlert: React.FC = () => {
                 width: CARD_W,
                 minHeight: CARD_H,
                 background: GLASS_BG,
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
                 padding: "48px 56px",
                 position: "relative",
                 display: "flex",
@@ -467,16 +517,34 @@ const Scene2_DashboardAlert: React.FC = () => {
                 justifyContent: "center",
               }}
             >
-              {/* Top light line */}
+              {/* Purple glow */}
               <div
                 style={{
                   position: "absolute",
-                  top: 0,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "70%",
-                  height: 1,
-                  background: `linear-gradient(90deg, transparent, ${COLORS.primary[400]}40, transparent)`,
+                  width: 80,
+                  height: 80,
+                  top: -20,
+                  left: -20,
+                  borderRadius: "50%",
+                  pointerEvents: "none",
+                  filter: "blur(32px)",
+                  backgroundColor: "rgba(142,91,255,0.18)",
+                }}
+              />
+              {/* Gradient border */}
+              <span
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  pointerEvents: "none",
+                  opacity: 0.5,
+                  borderRadius: clipR,
+                  border: "1px solid transparent",
+                  background: GRADIENT_BORDER,
+                  WebkitMask:
+                    "linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)",
+                  WebkitMaskComposite: "xor",
+                  maskComposite: "exclude" as unknown as string,
                 }}
               />
 
@@ -576,7 +644,6 @@ const Scene2_DashboardAlert: React.FC = () => {
         >
           <GlassCard
             borderColor={ALERT_BORDER}
-            lightLineColor="rgba(239,68,68,0.5)"
             style={{
               width: 300,
               padding: "22px 24px",
@@ -890,7 +957,7 @@ const Scene3_AgentProcessing: React.FC = () => {
         );
       })}
 
-      {/* ── AI Orchestrator Hub ── */}
+      {/* ── AI Orchestrator Hub — Shiny Card ── */}
       {(() => {
         const orchSpring = spring({
           frame: frame - 58,
@@ -900,83 +967,179 @@ const Scene3_AgentProcessing: React.FC = () => {
         const orchOp = interpolate(frame, [58, 73], [0, 1], CLAMP);
 
         return (
-          <div
-            style={{
-              position: "absolute",
-              left: ORCH_POS.x,
-              top: ORCH_POS.y,
-              width: ORCH_W,
-              transform: `scale(${orchSpring})`,
-              opacity: orchOp,
-            }}
-          >
-            <GlassCard
-              borderColor={`${COLORS.primary[500]}30`}
+          <>
+            <style>{`
+              @property --orch-gradient-angle {
+                syntax: "<angle>";
+                initial-value: 0deg;
+                inherits: false;
+              }
+              @property --orch-gradient-angle-offset {
+                syntax: "<angle>";
+                initial-value: 0deg;
+                inherits: false;
+              }
+              @property --orch-gradient-percent {
+                syntax: "<percentage>";
+                initial-value: 5%;
+                inherits: false;
+              }
+              @property --orch-gradient-shine {
+                syntax: "<color>";
+                initial-value: white;
+                inherits: false;
+              }
+              @keyframes orch-gradient-angle {
+                to { --orch-gradient-angle: 360deg; }
+              }
+              @keyframes orch-shimmer-card {
+                to { rotate: 360deg; }
+              }
+
+              .orch-shiny-card {
+                --shiny-cta-bg: #1a1a20;
+                --shiny-cta-bg-subtle: #1a1828;
+                --shiny-cta-highlight: #7A3BFF;
+                --duration: 3s;
+                --shadow-size: 2px;
+
+                isolation: isolate;
+                position: relative;
+                overflow: hidden;
+                border: 1px solid transparent;
+                border-radius: 18px;
+                background:
+                  linear-gradient(var(--shiny-cta-bg), var(--shiny-cta-bg)) padding-box,
+                  conic-gradient(
+                    from calc(var(--orch-gradient-angle) - var(--orch-gradient-angle-offset)),
+                    transparent,
+                    var(--shiny-cta-highlight) var(--orch-gradient-percent),
+                    var(--orch-gradient-shine) calc(var(--orch-gradient-percent) * 2),
+                    var(--shiny-cta-highlight) calc(var(--orch-gradient-percent) * 3),
+                    transparent calc(var(--orch-gradient-percent) * 4)
+                  ) border-box;
+                box-shadow: inset 0 0 0 1px var(--shiny-cta-bg-subtle);
+                animation: orch-gradient-angle linear infinite var(--duration),
+                  orch-gradient-angle linear infinite calc(var(--duration) / 0.4) reverse paused;
+                animation-composition: add;
+                animation-play-state: running;
+              }
+
+              .orch-shiny-card::before,
+              .orch-shiny-card::after {
+                content: "";
+                pointer-events: none;
+                position: absolute;
+                inset-inline-start: 50%;
+                inset-block-start: 50%;
+                translate: -50% -50%;
+                z-index: -1;
+              }
+
+              .orch-shiny-card::before {
+                --size: calc(100% - var(--shadow-size) * 3);
+                --position: 2px;
+                --space: calc(var(--position) * 2);
+                width: var(--size);
+                height: var(--size);
+                background: radial-gradient(
+                  circle at var(--position) var(--position),
+                  white calc(var(--position) / 4),
+                  transparent 0
+                ) padding-box;
+                background-size: var(--space) var(--space);
+                background-repeat: space;
+                mask-image: conic-gradient(
+                  from calc(var(--orch-gradient-angle) + 45deg),
+                  black,
+                  transparent 10% 90%,
+                  black
+                );
+                border-radius: inherit;
+                opacity: 0.4;
+                z-index: -1;
+                animation: orch-gradient-angle linear infinite var(--duration),
+                  orch-gradient-angle linear infinite calc(var(--duration) / 0.4) reverse paused;
+                animation-composition: add;
+                animation-play-state: running;
+              }
+
+              .orch-shiny-card::after {
+                width: 400%;
+                height: 400%;
+                background: linear-gradient(
+                  -50deg,
+                  transparent,
+                  var(--shiny-cta-highlight),
+                  transparent
+                );
+                mask-image: radial-gradient(circle at bottom, transparent 40%, black);
+                opacity: 0.6;
+                animation: orch-shimmer-card linear infinite var(--duration),
+                  orch-shimmer-card linear infinite calc(var(--duration) / 0.4) reverse paused;
+                animation-composition: add;
+                animation-play-state: running;
+              }
+
+              .orch-shiny-card-inner {
+                position: relative;
+                z-index: 1;
+              }
+            `}</style>
+
+            <div
               style={{
-                padding: "32px 36px",
-                height: ORCH_H,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: `${GLASS_SHADOW}, 0 0 ${isComplete ? 40 : 20}px ${COLORS.primary[500]}${isComplete ? "30" : "15"}`,
+                position: "absolute",
+                left: ORCH_POS.x,
+                top: ORCH_POS.y,
+                width: ORCH_W,
+                transform: `scale(${orchSpring})`,
+                opacity: orchOp,
               }}
             >
-              {/* Stronger top line */}
               <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "80%",
-                  height: 2,
-                  background: `linear-gradient(90deg, transparent, ${COLORS.primary[400]}80, transparent)`,
-                }}
-              />
-
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 14,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: `linear-gradient(135deg, ${COLORS.primary[600]}, ${COLORS.primary[800]})`,
-                  boxShadow: `0 0 24px ${COLORS.primary[500]}40`,
-                  marginBottom: 14,
-                }}
+                className="orch-shiny-card"
+                style={{ width: ORCH_W, height: ORCH_H }}
               >
-                <Sparkles size={24} color="white" />
+                <div
+                  className="orch-shiny-card-inner"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                    padding: "32px 36px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: GT_ALPINA,
+                      fontSize: 22,
+                      fontWeight: 300,
+                      color: COLORS.text.primary,
+                      letterSpacing: "0.01em",
+                    }}
+                  >
+                    AI Orchestrator
+                  </span>
+
+                  <span
+                    style={{
+                      fontFamily: monoFont,
+                      fontSize: 12,
+                      color: COLORS.primary[300],
+                      marginTop: 6,
+                    }}
+                  >
+                    {isComplete
+                      ? "Analysis complete"
+                      : "Processing signals..."}
+                  </span>
+                </div>
               </div>
-
-              <span
-                style={{
-                  fontFamily: GT_ALPINA,
-                  fontSize: 22,
-                  fontWeight: 300,
-                  color: COLORS.text.primary,
-                  letterSpacing: "0.01em",
-                }}
-              >
-                AI Orchestrator
-              </span>
-
-              <span
-                style={{
-                  fontFamily: monoFont,
-                  fontSize: 12,
-                  color: COLORS.primary[300],
-                  marginTop: 6,
-                }}
-              >
-                {isComplete
-                  ? "Analysis complete"
-                  : "Processing signals..."}
-              </span>
-            </GlassCard>
-          </div>
+            </div>
+          </>
         );
       })()}
 
@@ -1040,6 +1203,11 @@ const Scene4_RiskScore: React.FC = () => {
     config: { damping: 200, stiffness: 100 },
   });
   const alertCardOp = interpolate(frame, [72, 88], [0, 1], CLAMP);
+
+  // Liquid glass shimmer
+  const shimmerPos = interpolate(frame % 75, [0, 75], [-200, 600], CLAMP);
+  const shimmerOpacity = frame > 80 ? interpolate(frame % 75, [0, 20, 55, 75], [0, 0.12, 0.12, 0], CLAMP) : 0;
+  const floatY = Math.sin(frame / 30) * 3;
 
   return (
     <AbsoluteFill
@@ -1134,138 +1302,200 @@ const Scene4_RiskScore: React.FC = () => {
 
       </GlassCard>
 
-      {/* ── Portfolio Alert Card ── */}
+      {/* ── Portfolio Alert Card — Liquid Glass ── */}
       <div
         style={{
-          transform: `scale(${alertCardSpring})`,
+          transform: `scale(${alertCardSpring}) translateY(${floatY}px)`,
           opacity: alertCardOp,
         }}
       >
-        <GlassCard
-          borderColor={`${COLORS.primary[500]}25`}
+        <div
           style={{
-            padding: "40px 44px",
             width: 440,
-            boxShadow: `${GLASS_SHADOW}, 0 0 30px ${COLORS.primary[500]}15`,
+            borderRadius: 24,
+            overflow: "hidden",
+            position: "relative",
+            padding: "40px 44px",
+            backdropFilter: "blur(5px)",
+            WebkitBackdropFilter: "blur(5px)",
+            background: "rgba(255,255,255,0.05)",
+            boxShadow:
+              "0px 2px 30px 0px rgba(0,0,0,0.05), 0px 8px 72px -5px rgba(0,0,0,0.1)",
           }}
         >
-          {/* Header */}
+          {/* Inner blurred bg layer */}
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginBottom: 28,
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 560,
+              height: 340,
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              background: "rgba(136,136,136,0.15)",
+              pointerEvents: "none",
+            }}
+          />
+
+          {/* Inner edge highlights */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "inherit",
+              boxShadow:
+                "inset 1px 0.5px 0px 0px rgba(255,255,255,0.6), inset -1px -1px 0px 0px rgba(255,255,255,0.4), inset 0px 0px 5px 0px rgba(255,255,255,0.15), inset 0px 2px 20px 2px rgba(53,53,53,0.05)",
+              pointerEvents: "none",
+            }}
+          />
+
+          {/* Shimmer sweep */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              overflow: "hidden",
+              borderRadius: "inherit",
+              pointerEvents: "none",
             }}
           >
             <div
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: `linear-gradient(135deg, ${COLORS.primary[600]}, ${COLORS.primary[800]})`,
+                position: "absolute",
+                top: -20,
+                left: shimmerPos,
+                width: 140,
+                height: "250%",
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
+                transform: "rotate(15deg)",
+                opacity: shimmerOpacity,
               }}
-            >
-              <Shield size={18} color="white" />
-            </div>
-            <div>
-              <span
-                style={{
-                  fontFamily: GT_ALPINA,
-                  fontSize: 22,
-                  fontWeight: 300,
-                  color: COLORS.text.primary,
-                  letterSpacing: "0.01em",
-                }}
-              >
-                Portfolio Alert Generated
-              </span>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  marginTop: 4,
-                }}
-              >
-                <Zap size={12} color={COLORS.primary[400]} />
-                <span
-                  style={{
-                    fontSize: 12,
-                    color: COLORS.primary[300],
-                  }}
-                >
-                  Automatically
-                </span>
-              </div>
-            </div>
+            />
           </div>
 
-          {/* Recommendations */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-            }}
-          >
-            {RECOMMENDATIONS.map((rec, i) => {
-              const recDelay = 82 + i * 15;
-              const recOp = interpolate(
-                frame,
-                [recDelay, recDelay + 14],
-                [0, 1],
-                { ...CLAMP, easing: Easing.out(Easing.quad) },
-              );
-              const recX = interpolate(
-                frame,
-                [recDelay, recDelay + 18],
-                [16, 0],
-                { ...CLAMP, easing: Easing.out(Easing.exp) },
-              );
-              return (
+          {/* Content (relative to sit above glass layers) */}
+          <div style={{ position: "relative", zIndex: 1 }}>
+            {/* Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                marginBottom: 28,
+              }}
+            >
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: `linear-gradient(135deg, ${COLORS.primary[600]}, ${COLORS.primary[800]})`,
+                }}
+              >
+                <Shield size={18} color="white" />
+              </div>
+              <div>
+                <span
+                  style={{
+                    fontFamily: GT_ALPINA,
+                    fontSize: 22,
+                    fontWeight: 300,
+                    color: COLORS.text.primary,
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  Portfolio Alert Generated
+                </span>
                 <div
-                  key={i}
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 12,
-                    opacity: recOp,
-                    transform: `translateX(${recX}px)`,
+                    gap: 6,
+                    marginTop: 4,
                   }}
                 >
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: `${COLORS.primary[500]}12`,
-                      border: `1px solid ${COLORS.primary[500]}20`,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {rec.icon}
-                  </div>
+                  <Zap size={12} color={COLORS.primary[400]} />
                   <span
                     style={{
-                      fontSize: 16,
-                      color: COLORS.text.secondary,
-                      lineHeight: 1.4,
+                      fontSize: 12,
+                      color: COLORS.primary[300],
                     }}
                   >
-                    {rec.text}
+                    Automatically
                   </span>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            {/* Recommendations */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 16,
+              }}
+            >
+              {RECOMMENDATIONS.map((rec, i) => {
+                const recDelay = 82 + i * 15;
+                const recOp = interpolate(
+                  frame,
+                  [recDelay, recDelay + 14],
+                  [0, 1],
+                  { ...CLAMP, easing: Easing.out(Easing.quad) },
+                );
+                const recX = interpolate(
+                  frame,
+                  [recDelay, recDelay + 18],
+                  [16, 0],
+                  { ...CLAMP, easing: Easing.out(Easing.exp) },
+                );
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      opacity: recOp,
+                      transform: `translateX(${recX}px)`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: `${COLORS.primary[500]}12`,
+                        border: `1px solid ${COLORS.primary[500]}20`,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {rec.icon}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 16,
+                        color: COLORS.text.secondary,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {rec.text}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </GlassCard>
+        </div>
       </div>
     </AbsoluteFill>
   );
@@ -1278,9 +1508,7 @@ const Scene5_Closing: React.FC = () => {
   const { frame, fps } = useAnimFrame();
 
   // Word-by-word reveal for closing statement
-  const words = ["This", "is", "what"];
-  const highlightWords = ["portfolio", "intelligence"];
-  const endWords = ["looks", "like."];
+  const words = ["This", "is..."];
 
   const wordOp = (delay: number) =>
     interpolate(frame, [delay, delay + 12], [0, 1], {
@@ -1306,8 +1534,6 @@ const Scene5_Closing: React.FC = () => {
     config: { damping: 28, stiffness: 100, mass: 0.8 },
   });
   const logoOp = interpolate(frame, [68, 82], [0, 1], CLAMP);
-  const glowPulse =
-    frame > 78 ? Math.sin((frame - 78) * 0.055) * 0.3 + 0.5 : 0;
 
   // URL
   const urlSpring = spring({
@@ -1363,16 +1589,8 @@ const Scene5_Closing: React.FC = () => {
           maxWidth: 820,
         }}
       >
-        <div style={{ marginBottom: 4 }}>
-          {words.map((w, i) => renderWord(w, 5 + i * 5))}
-        </div>
-        <div style={{ marginBottom: 4 }}>
-          {highlightWords.map((w, i) =>
-            renderWord(w, 22 + i * 6, true),
-          )}
-        </div>
         <div>
-          {endWords.map((w, i) => renderWord(w, 36 + i * 5))}
+          {words.map((w, i) => renderWord(w, 5 + i * 7))}
         </div>
       </div>
 
@@ -1391,26 +1609,21 @@ const Scene5_Closing: React.FC = () => {
         style={{
           opacity: logoOp,
           transform: `scale(${logoSpring})`,
-          filter: `drop-shadow(0 0 ${30 * glowPulse}px ${COLORS.primary[500]}80)`,
           display: "flex",
           alignItems: "center",
-          gap: 16,
+          gap: 8,
         }}
       >
-        <Sparkles
-          size={32}
-          color={COLORS.primary[400]}
-          strokeWidth={1.5}
-          style={{ opacity: 0.7 }}
+        <Img
+          src={staticFile("axos-portfolio/logo.png")}
+          style={{ width: 122, height: 122 }}
         />
         <h1
           style={{
             fontFamily: GT_ALPINA,
             fontSize: 86,
             fontWeight: 300,
-            background: `linear-gradient(135deg, ${COLORS.primary[300]}, ${COLORS.primary[600]}, ${COLORS.primary[700]})`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: COLORS.text.primary,
             margin: 0,
             letterSpacing: "-0.02em",
           }}
@@ -1450,7 +1663,7 @@ const Scene5_Closing: React.FC = () => {
               fontWeight: 500,
             }}
           >
-            axos.ai
+            axoss.io
           </span>
         </div>
       </div>
